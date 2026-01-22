@@ -4,7 +4,6 @@ A machine learning project that builds and deploys a neural network classifier f
 
 ### Course: https://www.udemy.com/course/mlops-da-ciencia-de-dados-a-operacao/
 
-
 ## Project Structure
 
 

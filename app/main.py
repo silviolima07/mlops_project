@@ -6,9 +6,13 @@ import joblib
 import pandas as pd
 from flask import Flask, render_template, request
 from sklearn.datasets import load_breast_cancer
+
+
+import os
+#os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 #from tensorflow.keras.models import load_model
 from tensorflow import keras
-
 
 logger = logging.getLogger("app.main")
 

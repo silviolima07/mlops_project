@@ -70,7 +70,7 @@ def evaluate_model(
     evaluation = {"classification_report": report, "confusion_matrix": cm}
 
     # Log metrics
-    logger.info(f"Classification Report:\n{classification_report(y_true, y_pred)}")
+    logger.info(f"\n\nClassification Report:\n{classification_report(y_true, y_pred)}")
     evaluation_path = "metrics/evaluation.json"
     with open(evaluation_path, "w") as f:
         json.dump(evaluation, f, indent=2)
