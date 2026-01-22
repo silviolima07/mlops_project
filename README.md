@@ -1,6 +1,6 @@
 # ML Classifier - Breast Cancer Prediction
 
-A machine learning project that builds and deploys a neural network classifier for breast cancer prediction using the scikit-learn breast cancer dataset.
+        A machine learning project that builds and deploys a neural network classifier for breast cancer prediction using the scikit-learn breast cancer dataset.
 
 ## Project Structure
 
