@@ -2,7 +2,10 @@
 
 A machine learning project that builds and deploys a neural network classifier for breast cancer prediction using the scikit-learn breast cancer dataset.
 
+### Course: https://www.udemy.com/course/mlops-da-ciencia-de-dados-a-operacao/
+
 ## Project Structure
+
 
 ```
 /mlops_project
