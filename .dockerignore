@@ -1,11 +1,21 @@
-# Python
-.git
-.conda
-ml_classifier.egg-info
-__pycache__
+# |Python
+venv/
+__pycache__/
+.git/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
 
-# Data
+# |Data
 data/**/*.csv
 
-# Metrics
+# |Artifacts
+#artifacts/*.joblib  
+
+# |Models
+#models/*.keras
+
+# |Metrics
 metrics/*.json
+    

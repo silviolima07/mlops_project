@@ -6,9 +6,14 @@ import joblib
 import pandas as pd
 from flask import Flask, render_template, request
 from sklearn.datasets import load_breast_cancer
-from tensorflow.keras.models import load_model
+#from tensorflow.keras.models import load_model
+from tensorflow import keras
+
 
 logger = logging.getLogger("app.main")
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 
 class ModelService:
@@ -20,8 +25,12 @@ class ModelService:
         logger.info("Loading artifacts from local project folder")
 
         # Define base paths
-        artifacts_dir = "artifacts"
-        models_dir = "models"
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(base_dir)
+        artifacts_dir = os.path.join(project_root, "artifacts")
+        models_dir = os.path.join(project_root, "models")
+        logger.info(f"Resolved artifacts directory: {artifacts_dir}")
+
 
         # Define paths to the preprocessing artifacts
         features_imputer_path = os.path.join(
@@ -38,7 +47,7 @@ class ModelService:
         self.features_imputer = joblib.load(features_imputer_path)
         self.features_scaler = joblib.load(features_scaler_path)
         self.target_encoder = joblib.load(target_encoder_path)
-        self.model = load_model(model_path)
+        self.model = keras.models.load_model(model_path)
 
         logger.info("Successfully loaded all artifacts")
 

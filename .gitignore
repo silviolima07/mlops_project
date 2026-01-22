@@ -1,0 +1,24 @@
+# python
+ml_classifier.egg-info
+__pycache__/
+.notebook/
+
+venv
+.vscode
+
+# Data
+data/**/*.csv   
+
+# Artifacts
+artifacts/*.joblib
+#artifacts/\[features\]_mean_imputer.joblib
+#artifacts/\[features\]_scaler.joblib
+#artifacts/\[target\]_one_hot_encoder.joblib
+
+# Models
+models/*.keras
+
+# Metrics
+metrics/*.json
+
+
