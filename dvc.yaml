@@ -15,7 +15,7 @@ stages:
     outs:
       - data/preprocessed/train_preprocessed.csv
       - data/preprocessed/test_preprocessed.csv
-      - artifacts/[features]_mean_imputer.joblib
+      - artifacts/features_mean_imputer.joblib
     params:
       - preprocess_data.test_size
       - preprocess_data.random_seed    
@@ -29,7 +29,7 @@ stages:
     outs:
       - data/processed/train_processed.csv
       - data/processed/test_processed.csv 
-      - artifacts/[features]_scaler.joblib
+      - artifacts/features_scaler.joblib
 
   train:
     cmd: python -m src.model_training.train_model
@@ -38,7 +38,7 @@ stages:
       - data/processed/train_processed.csv
     outs:
       - models/model.keras
-      - artifacts/[target]_one_hot_encoder.joblib
+      - artifacts/target_one_hot_encoder.joblib
     metrics:
       - metrics/training.json   
     params:

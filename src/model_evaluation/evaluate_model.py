@@ -1,7 +1,9 @@
 import logging
 import json
-
+import os
 import joblib
+import mlflow
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -28,7 +30,7 @@ def load_encoder() -> LabelEncoder:
     Returns:
         LabelEncoder: Loaded label encoder.
     """
-    encoder_path = "artifacts/[target]_one_hot_encoder.joblib"
+    encoder_path = "artifacts/target_one_hot_encoder.joblib"
     encoder = joblib.load(encoder_path)
     return encoder
 
@@ -60,21 +62,41 @@ def evaluate_model(
         X (pd.DataFrame): Test features.
         y_true (pd.Series): True labels.
     """
-    # Generate model predictions
-    y_pred_proba = model.predict(X)
-    y_pred = np.argmax(y_pred_proba, axis=1)
+    
+    # Set up MLflow experiment tracking
+    mlflow.set_experiment("exp_ml_classification")
+    
+    # Get run_id of the latest run in the experiment
+    runs = mlflow.search_runs(experiment_ids=[os.getenv("MLFLOW_EXPERIMENT_ID")], order_by=["start_time DESC"])
+    run_id = runs.iloc[0]["run_id"]
+    
+    with mlflow.start_run(run_id=run_id):
+        logger.info("Evaluating model...")
+        
+        # Generate model predictions
+        y_pred_proba = model.predict(X)
+        y_pred = np.argmax(y_pred_proba, axis=1)
 
-    # Calculate evaluation metrics
-    report = classification_report(y_true, y_pred, output_dict=True)
-    cm = confusion_matrix(y_true, y_pred).tolist()
-    evaluation = {"classification_report": report, "confusion_matrix": cm}
+        # Calculate evaluation metrics
+        report = classification_report(y_true, y_pred, output_dict=True)
+        cm = confusion_matrix(y_true, y_pred).tolist()
+        evaluation = {"classification_report": report, "confusion_matrix": cm}
 
-    # Log metrics
-    logger.info(f"\n\nClassification Report:\n{classification_report(y_true, y_pred)}")
-    evaluation_path = "metrics/evaluation.json"
-    with open(evaluation_path, "w") as f:
-        json.dump(evaluation, f, indent=2)
-
+        # Log metrics (DVC)
+        logger.info(f"\n\nClassification Report:\n{classification_report(y_true, y_pred)}")
+        evaluation_path = "metrics/evaluation.json"
+        with open(evaluation_path, "w") as f:
+            json.dump(evaluation, f, indent=2)
+        
+        # Log evaluation metrics to MLflow
+        mlflow.log_metrics(
+            {
+                "test_accuracy": report["accuracy"],
+                "test_precision_weighted": report["weighted avg"]["precision"],
+                "test_recall_weighted": report["weighted avg"]["recall"],
+                "test_f1-score_weighted": report["weighted avg"]["f1-score"],
+            }                                   
+        )
 
 def main() -> None:
     """Main function to orchestrate the model evaluation process."""
