@@ -2,6 +2,9 @@ import json
 import logging
 import os
 
+import os
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 import joblib
 import numpy as np
 import pandas as pd
