@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Silvio%20Cesar/OneDrive/Desktop/UDEMY/2026/MLOPS%20_DATA_SCIENCE_OPERACAO/GITHUB/mlops_project/mlruns/860218115258881744/16d1faae02f741658023a7f53f086378/artifacts
+end_time: 1769190552183
+entry_point_name: ''
+experiment_id: '860218115258881744'
+lifecycle_stage: active
+run_id: 16d1faae02f741658023a7f53f086378
+run_name: mysterious-cow-697
+run_uuid: 16d1faae02f741658023a7f53f086378
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1769190309571
+status: 3
+tags: []
+user_id: Silvio Cesar

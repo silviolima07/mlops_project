@@ -111,7 +111,7 @@ def save_artifacts(
     test_data.to_csv(test_path, index=False)
 
     # Save imputer
-    imputer_path = os.path.join("artifacts", "[features]_mean_imputer.joblib")
+    imputer_path = os.path.join("artifacts", "features_mean_imputer.joblib")
     logger.info(f"Saving imputer to {imputer_path}")
     joblib.dump(imputer, imputer_path)
 

@@ -150,8 +150,8 @@ def train_model(train_data: pd.DataFrame, params: dict[str, int | float]) -> Non
         tf.keras.utils.set_random_seed(params.pop("random_seed"))
         
         # Log preprocessing artifacts -> foram definidos no inicio do pipeline
-        mlflow.log_artifacts("artifacts/features_mean_imputer.joblib")
-        mlflow.log_artifacts("artifacts/features_scaler.joblib")
+        mlflow.log_artifact("artifacts/features_mean_imputer.joblib")
+        mlflow.log_artifact("artifacts/features_scaler.joblib")
         
         
         # Prepare the data
@@ -161,6 +161,7 @@ def train_model(train_data: pd.DataFrame, params: dict[str, int | float]) -> Non
         model = create_model(
             input_shape=X_train.shape[1], num_classes=y_train.shape[1], params=params
         )
+       
 
         # Early stopping to prevent overfitting
         early_stopping = EarlyStopping(
@@ -179,6 +180,10 @@ def train_model(train_data: pd.DataFrame, params: dict[str, int | float]) -> Non
         )
 
         save_training_artifacts(model, encoder)
+        
+         # Log model to artifacts
+        mlflow.log_artifact("models/model.keras")
+        
         
         # Log the encoder artifact to MLflow
         mlflow.log_artifact("artifacts/target_one_hot_encoder.joblib")

@@ -73,7 +73,7 @@ def save_artifacts(
     test_processed.to_csv(test_path, index=False)
 
     # Save scaler
-    scaler_path = os.path.join("artifacts", "[features]_scaler.joblib")
+    scaler_path = os.path.join("artifacts", "features_scaler.joblib")
     logger.info(f"Saving scaler to {scaler_path}")
     joblib.dump(scaler, scaler_path)
 

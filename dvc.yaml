@@ -55,7 +55,7 @@ stages:
     deps:
       - src/model_evaluation/evaluate_model.py
       - models/model.keras
-      - artifacts/[target]_one_hot_encoder.joblib
+      - artifacts/target_one_hot_encoder.joblib
       - data/processed/test_processed.csv
     metrics:
       - metrics/evaluation.json 
