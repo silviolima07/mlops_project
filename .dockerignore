@@ -20,5 +20,8 @@ data/**/*.csv
 metrics/*.json
 
 # DVC
-.dvc   
+.dvc 
+
+# Mlflow
+mlruns  
 

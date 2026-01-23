@@ -22,3 +22,5 @@ models/*.keras
 metrics/*.json
 
 
+# Mlflow
+mlruns
