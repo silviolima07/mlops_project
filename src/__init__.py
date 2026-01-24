@@ -1,5 +1,10 @@
 import logging
 
+from dotenv import load_dotenv
+
+load_dotenv() # Irá ler o .env e configurar as variáveis de ambiente
+
+
 # Configure the logging strategy
 logging.basicConfig(
     level=logging.INFO, # DEBUG, INFO, WARNING, ERROR, CRITICAL

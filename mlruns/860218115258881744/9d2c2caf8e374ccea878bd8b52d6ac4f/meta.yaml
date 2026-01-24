@@ -1,8 +1,9 @@
 artifact_uri: file:///C:/Users/Silvio%20Cesar/OneDrive/Desktop/UDEMY/2026/MLOPS%20_DATA_SCIENCE_OPERACAO/GITHUB/mlops_project/mlruns/860218115258881744/9d2c2caf8e374ccea878bd8b52d6ac4f/artifacts
+deleted_time: 1769197761639
 end_time: 1769187359572
 entry_point_name: ''
 experiment_id: '860218115258881744'
-lifecycle_stage: active
+lifecycle_stage: deleted
 run_id: 9d2c2caf8e374ccea878bd8b52d6ac4f
 run_name: fortunate-sheep-764
 run_uuid: 9d2c2caf8e374ccea878bd8b52d6ac4f

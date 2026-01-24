@@ -1,8 +1,9 @@
 artifact_uri: file:///C:/Users/Silvio%20Cesar/OneDrive/Desktop/UDEMY/2026/MLOPS%20_DATA_SCIENCE_OPERACAO/GITHUB/mlops_project/mlruns/860218115258881744/08c00adc44324ca784a8e7a4bb22dbdd/artifacts
+deleted_time: 1769197761635
 end_time: 1769189967817
 entry_point_name: ''
 experiment_id: '860218115258881744'
-lifecycle_stage: active
+lifecycle_stage: deleted
 run_id: 08c00adc44324ca784a8e7a4bb22dbdd
 run_name: angry-steed-385
 run_uuid: 08c00adc44324ca784a8e7a4bb22dbdd

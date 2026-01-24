@@ -1,92 +1,96 @@
 import json
 import logging
 import os
+import sys
 
-import os
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+# =============================
+# CONFIGURAÇÕES DE AMBIENTE
+# =============================
 
-import mlflow
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["KMP_WARNINGS"] = "FALSE"
+os.environ["MLFLOW_TRACKING_PRINT_RUN_URL"] = "false"
+os.environ["MLFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR"] = "false"
+
+# =============================
+# LOGGING
+# =============================
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+
+logger = logging.getLogger("src.model_training.train_model")
+
+# =============================
+# IMPORTS
+# =============================
 
 import joblib
+import mlflow
+
+
+mlflow.set_tracking_uri(
+    "file://" + os.path.expanduser("~/mlruns")
+)
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import yaml
+
 from sklearn.preprocessing import OneHotEncoder
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 
-logger = logging.getLogger("src.model_training.train_model")
+tf.get_logger().setLevel("ERROR")
 
+# =============================
+# LOADERS
+# =============================
 
 def load_data() -> pd.DataFrame:
-    """Load the feature-engineered training data.
-
-    Returns:
-        pd.DataFrame: A dataframe containing the training data.
-    """
-    train_path = "data/processed/train_processed.csv"
-    logger.info(f"Loading feature data from {train_path}")
-    train_data = pd.read_csv(train_path)
-    return train_data
+    path = "data/processed/train_processed.csv"
+    logger.info(f"Loading training data from {path}")
+    return pd.read_csv(path)
 
 
-def load_params() -> dict[str, float | int]:
-    """Load model hyperparameters for the train stage from params.yaml.
-
-    Returns:
-        dict[str, int | float]: dictionary containing model hyperparameters.
-    """
+def load_params() -> dict:
     with open("params.yaml", "r") as f:
-        params = yaml.safe_load(f)
-    return params["train"]
+        return yaml.safe_load(f)["train"]
 
+# =============================
+# PREPARAÇÃO DOS DADOS
+# =============================
 
-def prepare_data(train_data: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray, OneHotEncoder]:
-    """Prepare data for neural network training by separating features and target, and encoding labels.
+def prepare_data(
+    train_data: pd.DataFrame,
+) -> tuple[pd.DataFrame, np.ndarray, OneHotEncoder]:
 
-    Args:
-        train_data (pd.DataFrame): Training dataset.
-        test_data (pd.DataFrame): Test dataset.
+    X = train_data.drop(columns=["target"])
+    y = train_data["target"]
 
-    Returns:
-        tuple containing:
-            pd.DataFrame: Training features
-            np.ndarray: Encoded training labels
-            OneHotEncoder: Fitted label encoder
-    """
-    # Separate features and target for train data
-    X_train = train_data.drop("target", axis=1)
-    y_train = train_data["target"]
-
-    # One-hot encode the target variable
     encoder = OneHotEncoder(sparse_output=False)
-    y_train_encoded = encoder.fit_transform(y_train.values.reshape(-1, 1))
+    y_encoded = encoder.fit_transform(y.values.reshape(-1, 1))
 
-    return X_train, y_train_encoded, encoder
+    return X, y_encoded, encoder
 
+# =============================
+# MODELO
+# =============================
 
-def create_model(
-    input_shape: int, num_classes: int, params: dict[str, int | float]
-) -> tf.keras.Model:
-    """Create a Keras Dense Neural Network model.
+def create_model(input_dim: int, num_classes: int, params: dict) -> tf.keras.Model:
 
-    Args:
-        input_shape (int): Number of input features.
-        num_classes (int): Number of target classes.
-        params (dict[str, int | float]): Model hyperparameters.
-
-    Returns:
-        tf.keras.Model: Compiled Keras model.
-    """
     model = Sequential(
         [
             Dense(
                 params["hidden_layer_1_neurons"],
                 activation="relu",
-                input_shape=(input_shape,)
+                input_shape=(input_dim,),
             ),
             Dropout(params["dropout_rate"]),
             Dense(
@@ -98,77 +102,67 @@ def create_model(
         ]
     )
 
-    optimizer = Adam(learning_rate=params["learning_rate"])
-
     model.compile(
-        optimizer=optimizer, loss="categorical_crossentropy", metrics=["accuracy"]
+        optimizer=Adam(learning_rate=params["learning_rate"]),
+        loss="categorical_crossentropy",
+        metrics=["accuracy"],
     )
 
     return model
 
+# =============================
+# SALVAR ARTEFATOS
+# =============================
 
-def save_training_artifacts(model: tf.keras.Model, encoder: OneHotEncoder) -> None:
-    """Save model artifacts to disk.
+def save_artifacts(model: tf.keras.Model, encoder: OneHotEncoder) -> None:
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("artifacts", exist_ok=True)
 
-    Args:
-        model (tf.keras.Model): Trained Keras model.
-        encoder (OneHotEncoder): Fitted label encoder.
-    """
-    artifacts_dir = "artifacts"
-    models_dir = "models"
-    model_path = os.path.join(models_dir, "model.keras")
-    encoder_path = os.path.join(artifacts_dir, "target_one_hot_encoder.joblib")
+    model_path = "models/model.keras"
+    encoder_path = "artifacts/target_one_hot_encoder.joblib"
 
-    # Save the model
     logger.info(f"Saving model to {model_path}")
     model.save(model_path)
 
-    # Save the encoder for inference
     logger.info(f"Saving encoder to {encoder_path}")
     joblib.dump(encoder, encoder_path)
 
+# =============================
+# TREINAMENTO
+# =============================
 
-def train_model(train_data: pd.DataFrame, params: dict[str, int | float]) -> None:
-    """Train a Keras model, logging metrics and artifacts with MLflow.
+def train_model(train_data: pd.DataFrame, params: dict) -> None:
 
-    Args:
-        train_data (pd.DataFrame): Training dataset.
-        params (dict[str, int | float]): Model hyperparameters.
-    """
-    # Set up MLflow experiment
     mlflow.set_experiment("exp_ml_classification")
-    
-    # Set up Keras autologging
-    mlflow.keras.autolog()
-    
+
     with mlflow.start_run():
-        
-        # Log parameters to MLflow
+
+        # Log hiperparâmetros
         mlflow.log_params(params)
-        
-        # Set random seed for reproducibility
-        tf.keras.utils.set_random_seed(params.pop("random_seed"))
-        
-        # Log preprocessing artifacts -> foram definidos no inicio do pipeline
+
+        # Seed
+        tf.keras.utils.set_random_seed(params["random_seed"])
+
+        # Log artefatos de pré-processamento
         mlflow.log_artifact("artifacts/features_mean_imputer.joblib")
         mlflow.log_artifact("artifacts/features_scaler.joblib")
-        
-        
-        # Prepare the data
+
+        # Dados
         X_train, y_train, encoder = prepare_data(train_data)
-        
-        # Create the model
+
+        # Modelo
         model = create_model(
-            input_shape=X_train.shape[1], num_classes=y_train.shape[1], params=params
+            input_dim=X_train.shape[1],
+            num_classes=y_train.shape[1],
+            params=params,
         )
-       
 
-        # Early stopping to prevent overfitting
         early_stopping = EarlyStopping(
-            monitor="val_loss", patience=10, restore_best_weights=True
+            monitor="val_loss",
+            patience=10,
+            restore_best_weights=True,
         )
 
-        # Train the model with validation split
         logger.info("Training model...")
         history = model.fit(
             X_train,
@@ -177,37 +171,37 @@ def train_model(train_data: pd.DataFrame, params: dict[str, int | float]) -> Non
             epochs=params["epochs"],
             batch_size=params["batch_size"],
             callbacks=[early_stopping],
+            verbose=0,
         )
 
-        save_training_artifacts(model, encoder)
-        
-         # Log model to artifacts
-        mlflow.log_artifact("models/model.keras")
-        
-        
-        # Log the encoder artifact to MLflow
-        mlflow.log_artifact("artifacts/target_one_hot_encoder.joblib")
-        
-        
-        # Save training metrics to a file
-        metrics = {
-            metric: float(history.history[metric][-1]) 
-            for metric in history.history
-        }
-        metrics_path = "metrics/training.json"
-        with open(metrics_path, "w") as f:
-            json.dump(metrics, f, indent=2)
+        # Salvar artefatos
+        save_artifacts(model, encoder)
 
-        # Log training metrics to MLflow --. Automatically logged by mlflow.keras.autolog()
-        # mlflow.log_metrics(metrics)
-        
+        mlflow.log_artifact("models/model.keras")
+        mlflow.log_artifact("artifacts/target_one_hot_encoder.joblib")
+
+        # Métricas finais
+        final_metrics = {
+            k: float(v[-1]) for k, v in history.history.items()
+        }
+
+        for k, v in final_metrics.items():
+            mlflow.log_metric(k, v)
+
+        # Métricas para o DVC
+        os.makedirs("metrics", exist_ok=True)
+        with open("metrics/training.json", "w") as f:
+            json.dump(final_metrics, f, indent=2)
+
+# =============================
+# MAIN
+# =============================
+
 def main() -> None:
-    """Main function to orchestrate the model training process."""
     train_data = load_data()
     params = load_params()
     train_model(train_data, params)
-    logger.info("Model training completed")
-
+    logger.info("Training completed successfully")
 
 if __name__ == "__main__":
     main()

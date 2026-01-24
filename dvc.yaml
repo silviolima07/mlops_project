@@ -1,6 +1,6 @@
 stages:
   load_data:
-    always_changed: true # This stage always runs to fetch the latest data
+    always_changed: true
     cmd: python -m src.data_loading.load_data
     deps:
       - src/data_loading/load_data.py
@@ -18,7 +18,7 @@ stages:
       - artifacts/features_mean_imputer.joblib
     params:
       - preprocess_data.test_size
-      - preprocess_data.random_seed    
+      - preprocess_data.random_seed
 
   engineer_features:
     cmd: python -m src.feature_engineering.engineer_features
@@ -28,7 +28,7 @@ stages:
       - data/preprocessed/test_preprocessed.csv
     outs:
       - data/processed/train_processed.csv
-      - data/processed/test_processed.csv 
+      - data/processed/test_processed.csv
       - artifacts/features_scaler.joblib
 
   train:
@@ -36,15 +36,17 @@ stages:
     deps:
       - src/model_training/train_model.py
       - data/processed/train_processed.csv
+      - artifacts/features_mean_imputer.joblib
+      - artifacts/features_scaler.joblib
     outs:
       - models/model.keras
       - artifacts/target_one_hot_encoder.joblib
     metrics:
-      - metrics/training.json   
+      - metrics/training.json
     params:
       - train.learning_rate
       - train.hidden_layer_1_neurons
-      - train.hidden_layer_2_neurons  
+      - train.hidden_layer_2_neurons
       - train.dropout_rate
       - train.epochs
       - train.batch_size
@@ -58,4 +60,4 @@ stages:
       - artifacts/target_one_hot_encoder.joblib
       - data/processed/test_processed.csv
     metrics:
-      - metrics/evaluation.json 
+      - metrics/evaluation.json
